@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>
+    SwoleStats
+  </title>
+</head>
+
+<body>
+  <h1>
+    SwoleStats
+  </h1>
+  <form action="search" method="POST">
+    <label for="search">Search for an Exercise by ID:</label><br>
+    <input type="text" id="search" name="search"><br>
+    <input type="submit" value="Submit">
+  </form>
+  <div class="btn-group">
+    <Form action="add" method="POST"> <button> Add 5 Mile Run </button></Form>
+    <Form action="edit" method="POST"> <button> Change 5 Mile Run to 10 Mile Run</button></Form>
+    <Form action="delete" method="POST"> <button> Delete 5 or 10 Mile Run </button></Form>
+    <Form action="highest-pr" method="POST"> <button> Highest PR for each workout </button></Form>
+    <Form action="gym-most-often" method="POST"> <button> User's who've gone to the gym most </button></Form>
+  </div>
+  <div>
+    <h1>
+      <%= data %>
+    </h1>
+  </div>
+</body>
+
+</html>
