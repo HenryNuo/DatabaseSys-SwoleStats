@@ -92,6 +92,44 @@ userRouter.post('/', async(req, res) => {
 
 
 
+
+
+userRouter.get('/mostActive', async(req, res) => {
+    console.log("GET mostActive User");
+    var sqlQuery = `
+        SELECT 
+            userFirstName, 
+            userLastName, 
+            COUNT(SessionID) as NumberOfGymSessions
+        FROM
+            User
+            NATURAL JOIN GymSession
+        GROUP BY userUsername
+        ORDER BY COUNT(SessionID) DESC
+        LIMIT 15`;
+    mySQL.query(
+        sqlQuery, 
+        function (err, data, fields) {
+            if (err) {
+                return res.status(500).json({
+                    status: "failure",
+                    length: err?.length,
+                    data: err
+                })
+            } else {
+                return res.status(200).json({
+                status: "success",
+                length: data?.length,
+                data: data,
+                });
+            }
+        }
+    );
+});
+
+
+
+
 userRouter.get('/:userUsername', async(req, res) => {
     console.log("GET User by userName");
     var sqlQuery = `

@@ -17,26 +17,6 @@ const PORT = process.env.EXPRESS_PORT ? process.env.EXPRESS_PORT : 5000;
 
 
 
-/******************************
- * 
- *  Import Environment Variables
- *      checks to make sure you are in local environment and then
- *      loads environment variables
- * 
- ******************************/
-// if (!process.env.ENV_TYPE || process.env.ENV_TYPE == "local") { 
-//     const dotenv = require("dotenv").config( { path: '../../../.env' } );
-  
-//     // Checks if dotenv failed to parse information
-//     if (dotenv.error) {
-//         console.log("Cannot Parse from .env file")
-//         throw dotenv.error
-//     }
-// }
-
-
-
-
 
 /******************************
  * 

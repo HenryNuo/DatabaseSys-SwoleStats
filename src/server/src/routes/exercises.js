@@ -17,8 +17,8 @@ const { mySQL } = require("../utils/mySQL.js");
 
 
 exerciseRouter.get('/', async(req, res) => {
-    conn.query(
-        `SELECT * FROM "User"`, 
+    mySQL.query(
+        `SELECT * FROM Exercises`, 
         function (err, data, fields) {
             if (err) {
                 return next(new AppError(err))
@@ -37,163 +37,187 @@ exerciseRouter.get('/', async(req, res) => {
 
 
 exerciseRouter.post('/', async(req, res) => {
-    console.log("POST Interview");
-
-    var sqlQuery = {
-        text: `
-            INSERT 
-                INTO "User"
-            (
-                "userUsername",
-                "userPassword",
-                "userFirstName",
-                "userLastName",
-                "userGender",
-                "userAge",
-                "userWeight",
-                "userHeight"
-            )
-            VALUES
-                ( ?,?,?,?,?,?,?,? )
-            RETURNING *`,
-        values: [
-            req.body.userUsername, 
-            req.body.userPassword, 
-            req.body.userFirstName, 
-            req.body.userLastName,
-            req.body.userGender, 
-            req.body.userAge,
-            req.body.userWeight,
-            req.body.userHeight
-        ]
-    };
-    let output = await mySQL
-        .query(sqlQuery)
-        .catch(e => {
-            console.error(e.stack);
-            return res.status(400).json(
-                {
-                    message: `Error Occured while running Query`,
-                    status: "Failed"
-                }
-            );
-        });
-
-    if (output.rowCount == 0) {
-        return res.status(400).json(
-            {
-                message: `No row with ID=${req.params.InterviewID}`,
-                status: "Failed"
+    console.log("POST Exercises");
+    var sqlQuery = `
+        INSERT 
+            INTO Exercises
+        (
+            exerciseID,
+            exerciseName,
+            exerciseBodyPart,
+            exerciseEquipment,
+            exerciseGIFURL
+        )
+        VALUES
+            ( (SELECT max(exerciseID)+1 FROM (SELECT exerciseID FROM Exercises) as k),?,?,?,? )`;
+    var sqlValues = [
+        req.body.exerciseName, 
+        req.body.exerciseBodyPart, 
+        req.body.exerciseEquipment, 
+        req.body.exerciseGIFURL
+    ];
+    mySQL.query(
+        sqlQuery, sqlValues, 
+        function (err, data, fields) {
+            if (err) {
+                return res.status(500).json({
+                    status: "failure",
+                    length: err?.length,
+                    data: err
+                })
+            } else {
+                return res.status(200).json({
+                status: "success",
+                length: data?.length,
+                data: data,
+                });
             }
-        );
-    } else {
-        return res.send(output.rows);
-    }
-});
-
-
-
-
-exerciseRouter.get('/', async(req, res) => {
-    console.log("GET Interview by ID");
-
-    var sqlQuery = {
-        text: `
-            SELECT * 
-            FROM "Interview"
-            WHERE "InterviewID" = $1`,
-        values: [
-            req.params.InterviewID
-        ]
-    };
-    let output = await mySQL
-        .query(sqlQuery)
-        .catch(e => {
-            console.error(e.stack);
-            return res.status(400).json(
-                {
-                    message: `Error Occured while running Query`,
-                    status: "Failed"
-                }
-            );
-        });
-
-    if (output.rowCount == 0) {
-        return res.status(400).json(
-            {
-                message: `No row with ID=${req.params.InterviewID}`,
-                status: "Failed"
-            }
-        );
-    } else {
-        return res.send(output.rows);
-    }
+        }
+    );
 });
 
 
 
 
 exerciseRouter.put('/:exerciseID', async(req, res) => {
+    console.log("POST Exercises");
     var sqlQuery = `
-        SELECT * 
-        FROM Exercises 
-        WHERE 
-            exerciseID = ?`;
-    var sqlVars = [req.body.search];
-    connection.query(sql, function (err, result) {
+        UPDATE 
+            Exercises
+        SET 
+            exerciseName = ?,
+            exerciseBodyPart = ?,
+            exerciseEquipment = ?,
+            exerciseGIFURL = ?
+        WHERE
+            exerciseID = ?`
+    var sqlValues = [
+        req.body.exerciseName, 
+        req.body.exerciseBodyPart, 
+        req.body.exerciseEquipment, 
+        req.body.exerciseGIFURL,
+        req.params.exerciseID
+    ];
+    mySQL.query(
+        sqlQuery, sqlValues, 
+        function (err, data, fields) {
             if (err) {
-                    res.render('index', {
-                            data: 'Error, exercise with that ID not found'
-                    });
-                    return;
+                return res.status(500).json({
+                    status: "failure",
+                    length: err?.length,
+                    data: err
+                })
+            } else {
+                return res.status(200).json({
+                status: "success",
+                length: data?.length,
+                data: data,
+                });
             }
-            console.log(result);
-            res.render('index', {
-                    data: JSON.stringify(result)
-            });
-    }
+        }
     );
 })
 
 
 
 
-exerciseRouter.delete('/:InterviewID', async(req, res) => {
-    console.log("DELETE Interview by ID");
-
-    var sqlQuery = {
-        text: `
-            DELETE FROM 
-                "Interview" 
-            WHERE 
-                "InterviewID"= $1
-            RETURNING *`,
-        values: [
-            req.params.InterviewID
-        ]
-    };
-    var output = await mySQL
-        .query(sqlQuery)
-        .catch(e => {
-            console.error(e.stack);
-            return res.status(400).json(
-                {
-                    message: `Error Occured while running Query`,
-                    status: "Failed"
-                }
-            );
-        });
-
-    if (output.rowCount == 0) {
-        return res.status(400).json(
-            {
-                message: `No row with ID=${req.params.InterviewID}`,
-                status: "Failed"
+exerciseRouter.delete('/:exerciseID', async(req, res) => {
+    console.log("DELETE Exercises");
+    var sqlQuery = `
+        DELETE 
+            FROM Exercises
+        WHERE
+            exerciseID = ?`;
+    var sqlValues = [
+            req.params.exerciseID, 
+            req.body.exerciseBodyPart, 
+            req.body.exerciseEquipment, 
+            req.body.exerciseGIFURL
+    ];
+    mySQL.query(
+        sqlQuery, sqlValues, 
+        function (err, data, fields) {
+            if (err) {
+                return res.status(500).json({
+                    status: "failure",
+                    length: err?.length,
+                    data: err
+                })
+            } else {
+                return res.status(200).json({
+                status: "success",
+                length: data?.length,
+                data: data,
+                });
             }
-        );
-    } else {
-        return res.send(output.rows);
-    }
+        }
+    );
+});
+
+
+
+
+
+exerciseRouter.get('/highestPRs', async(req, res) => {
+    console.log("GET highestPRs Exercises");
+    var sqlQuery = `
+        SELECT 
+            exerciseName, MAX(prWeight)
+        FROM
+            Records
+            NATURAL JOIN Exercises
+        GROUP BY exerciseID
+        ORDER BY exerciseName
+        LIMIT 15`;
+    mySQL.query(
+        sqlQuery, 
+        function (err, data, fields) {
+            if (err) {
+                return res.status(500).json({
+                    status: "failure",
+                    length: err?.length,
+                    data: err
+                })
+            } else {
+                return res.status(200).json({
+                status: "success",
+                length: data?.length,
+                data: data,
+                });
+            }
+        }
+    );
+});
+
+
+
+
+
+exerciseRouter.get('/searchByBodyPart/:exerciseBodyPart', async(req, res) => {
+    console.log("GET searchByBodyPart Exercises");
+    var sqlQuery = `
+        SELECT *
+        FROM Exercises
+        WHERE
+            exerciseBodyPart LIKE "%${decodeURIComponent(req.params.exerciseBodyPart)}%"`;
+    mySQL.query(
+        sqlQuery,
+        function (err, data, fields) {
+            if (err) {
+                return res.status(500).json({
+                    status: "failure",
+                    length: err?.length,
+                    data: err
+                })
+            } else {
+                return res.status(200).json({
+                status: "success",
+                length: data?.length,
+                data: data,
+                });
+            }
+        }
+    );
 });
 
 
