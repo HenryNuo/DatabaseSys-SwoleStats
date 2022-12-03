@@ -1,13 +1,13 @@
 import React, { useState } from "react";
 import config from "../config";
-import Header from "./Header";
+import { Button, TextField, Stack } from "@mui/material";
 
 function DeleteExercise() {
   const [exerciseID, setExerciseID] = useState("");
 
   const handleSubmit = (event) => {
     event.preventDefault();
-    fetch(`${config.resourceServer}/exercises/${exerciseID}`, {
+    fetch(`${config.localServer}/exercise/${exerciseID}`, {
       method: "DELETE",
       headers: {
         "Content-Type": "application/json",
@@ -15,33 +15,29 @@ function DeleteExercise() {
     }).then((response) => {
       response.json().then((data) => {
         if (response.ok) {
-          alert(`Successfully Deleted Exercise`)
+          alert(`Successfully Deleted Exercise`);
         } else {
           alert(
             `Failed At Deleting Exercise:
             ${data}`
-            )
+          );
         }
       });
     });
-  }
+  };
 
   return (
-    <div>
-      <Header />
+    <Stack spacing={2}>
       <h1>Delete Exercise</h1>
-      <form onSubmit={handleSubmit}>
-        <label>Enter exerciseID:
-          <input 
-            type="text" 
-            value={exerciseID}
-            onChange={(e) => setExerciseID(e.target.value)}
-          />
-        </label>
-        <br />
-        <input type="submit" />
-      </form>
-    </div>
+      <TextField
+        placeholder="Exercise ID"
+        value={exerciseID}
+        onChange={(e) => setExerciseID(e.target.value)}
+      ></TextField>
+      <Button variant="contained" onClick={handleSubmit}>
+        Delete Exercise
+      </Button>
+    </Stack>
   );
 }
 

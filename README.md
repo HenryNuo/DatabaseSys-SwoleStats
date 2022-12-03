@@ -14,3 +14,23 @@ You should make sure you keep your project root files up-to-date. Information fo
 
 ## Code Contribution
 Individual code contribution will be used to evaluate individual contribution to the project.
+
+## Instructions to Run
+### Local Dev
+- Run Frontend
+  - `cd src/cleint` moving to client folder
+  - `npm i` installing all packages required to run the frontend
+  - `npm start` starting the frontend dev server
+- Run Backend
+  - `cd src/server` moving to server folder
+  - `npm i` installing all packges required to run the frontend
+  - `npm start` starting the backend server
+### Run in VM
+- Build Frontend (builds into server so that the server can serve the html files)
+  - `cd src/cleint` moving to client folder
+  - `npm i` installing all packages required to run the frontend
+  - `npm run build` building the frontend project into the server
+- Run Backend
+  - `cd src/server` moving to server folder
+  - `npm i` installing all packges required to run the frontend
+  - `npm start` starting the backend server

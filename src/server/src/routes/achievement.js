@@ -1,19 +1,19 @@
 var express = require("express");
-var routineRouter = express.Router();
+var achievementRouter = express.Router();
 
 //Other Dependencies
 var cors = require("cors");
 
 // Middleware
-routineRouter.use(express.urlencoded({ extended: true }));
-routineRouter.use(express.json());
-routineRouter.use(cors());
+achievementRouter.use(express.urlencoded({ extended: true }));
+achievementRouter.use(express.json());
+achievementRouter.use(cors());
 
 const { mySQL } = require("../utils/mySQL.js");
 
-routineRouter.get("/", async (req, res) => {
-    console.log("GET ALL routine");
-    mySQL.query(`SELECT * FROM routine`, function (err, data, fields) {
+achievementRouter.get("/", async (req, res) => {
+    console.log("GET ALL achievement");
+    mySQL.query(`SELECT * FROM achievement`, function (err, data, fields) {
         if (err) {
             return next(new AppError(err));
         } else {
@@ -26,17 +26,18 @@ routineRouter.get("/", async (req, res) => {
     });
 });
 
-routineRouter.post("/", async (req, res) => {
-    console.log("POST routine");
+achievementRouter.post("/", async (req, res) => {
+    console.log("POST achievement");
     var sqlQuery = `
         INSERT 
-            INTO routine
+            INTO achievement
         (
-            name
+            title,
+            description
         )
         VALUES
-            ( ? )`;
-    var sqlValues = [req.body.name];
+            ( ?,? )`;
+    var sqlValues = [req.body.title, req.body.description];
     mySQL.query(sqlQuery, sqlValues, function (err, data, fields) {
         if (err) {
             return res.status(500).json({
@@ -54,16 +55,16 @@ routineRouter.post("/", async (req, res) => {
     });
 });
 
-routineRouter.put("/:id", async (req, res) => {
-    console.log("POST routine");
+achievementRouter.put("/:title", async (req, res) => {
+    console.log("POST achievement");
     var sqlQuery = `
         UPDATE 
-            routine
+            achievement
         SET 
-            name = ?,
+            description = ?
         WHERE
-            id = ?`;
-    var sqlValues = [req.body.name, req.params.id];
+            title = ?`;
+    var sqlValues = [req.body.description, req.params.title];
     mySQL.query(sqlQuery, sqlValues, function (err, data, fields) {
         if (err) {
             return res.status(500).json({
@@ -81,14 +82,14 @@ routineRouter.put("/:id", async (req, res) => {
     });
 });
 
-routineRouter.delete("/:id", async (req, res) => {
-    console.log("DELETE routine");
+achievementRouter.delete("/:title", async (req, res) => {
+    console.log("DELETE achievement");
     var sqlQuery = `
         DELETE 
-            FROM routine
+            FROM achievement
         WHERE
-            id = ?`;
-    var sqlValues = [req.params.id];
+            title = ?`;
+    var sqlValues = [req.params.title];
     mySQL.query(sqlQuery, sqlValues, function (err, data, fields) {
         if (err) {
             return res.status(500).json({
@@ -106,4 +107,4 @@ routineRouter.delete("/:id", async (req, res) => {
     });
 });
 
-module.exports = routineRouter;
+module.exports = achievementRouter;

@@ -1,8 +1,8 @@
-var express = require('express');
+var express = require("express");
 var userRouter = express.Router();
 
 //Other Dependencies
-var cors = require('cors');
+var cors = require("cors");
 
 // Middleware
 userRouter.use(express.urlencoded({ extended: true }));
@@ -11,257 +11,218 @@ userRouter.use(cors());
 
 const { mySQL } = require("../utils/mySQL.js");
 
-
-
-
-
-
-userRouter.get('/', async(req, res) => {
-    console.log("Get All Users")
-    mySQL.query(
-        `SELECT * FROM User`, 
-        function (err, data, fields) {
-            if (err) {
-                return res.status(500).json({
-                    status: "failure",
-                    length: err?.length,
-                    data: err
-                })
-            } else {
-                return res.status(200).json({
+userRouter.get("/", async (req, res) => {
+    console.log("GET All user");
+    mySQL.query(`SELECT * FROM user`, function (err, data, fields) {
+        if (err) {
+            return res.status(500).json({
+                status: "failure",
+                length: err.length,
+                data: err,
+            });
+        } else {
+            return res.status(200).json({
                 status: "success",
-                length: data?.length,
+                length: data.length,
                 data: data,
-                });
-            }
+            });
         }
-    );
+    });
 });
 
-
-
-
-userRouter.post('/', async(req, res) => {
-    console.log("POST Users");
+userRouter.post("/", async (req, res) => {
+    console.log("POST user");
     var sqlQuery = `
             INSERT 
-                INTO User
+                INTO user
             (
-                userUsername,
-                userPassword,
-                userFirstName,
-                userLastName,
-                userGender,
-                userAge,
-                userWeight,
-                userHeight
+                username,
+                password,
+                first_name,
+                last_name,
+                gender,
+                age,
+                weight,
+                height
             )
             VALUES
-                ( ?,?,?,?,?,?,?,? )
-            RETURNING *`;
+                ( ?,?,?,?,?,?,?,? )`;
     var sqlValues = [
-            req.body.userUsername, 
-            req.body.userPassword, 
-            req.body.userFirstName, 
-            req.body.userLastName,
-            req.body.userGender, 
-            req.body.userAge,
-            req.body.userWeight,
-            req.body.userHeight
+        req.body.username,
+        req.body.password,
+        req.body.first_name,
+        req.body.last_name,
+        req.body.gender,
+        req.body.age,
+        req.body.weight,
+        req.body.height,
     ];
-    mySQL.query(
-        sqlQuery, sqlValues, 
-        function (err, data, fields) {
-            if (err) {
-                return res.status(500).json({
-                    status: "failure",
-                    length: err?.length,
-                    data: err
-                })
-            } else {
-                return res.status(200).json({
+    mySQL.query(sqlQuery, sqlValues, function (err, data, fields) {
+        if (err) {
+            return res.status(500).json({
+                status: "failure",
+                length: err.length,
+                data: err,
+            });
+        } else {
+            return res.status(200).json({
                 status: "success",
-                length: data?.length,
+                length: data.length,
                 data: data,
-                });
-            }
+            });
         }
-    );
+    });
 });
 
-
-
-
-
-
-userRouter.get('/mostActive', async(req, res) => {
-    console.log("GET mostActive User");
-    var sqlQuery = `
-        SELECT 
-            userFirstName, 
-            userLastName, 
-            COUNT(SessionID) as NumberOfGymSessions
-        FROM
-            User
-            NATURAL JOIN GymSession
-        GROUP BY userUsername
-        ORDER BY COUNT(SessionID) DESC
-        LIMIT 15`;
-    mySQL.query(
-        sqlQuery, 
-        function (err, data, fields) {
-            if (err) {
-                return res.status(500).json({
-                    status: "failure",
-                    length: err?.length,
-                    data: err
-                })
-            } else {
-                return res.status(200).json({
-                status: "success",
-                length: data?.length,
-                data: data,
-                });
-            }
-        }
-    );
-});
-
-
-
-
-userRouter.get('/:userUsername', async(req, res) => {
-    console.log("GET User by userName");
+userRouter.post("/login", async (req, res) => {
+    console.log("Post user login");
     var sqlQuery = `
         SELECT *
-        FROM User
-        WHERE 
-            userUsername = ?`;
-    var sqlValues = [
-            req.params.userUsername
-    ];
-    mySQL.query(sqlQuery, sqlValues, 
-        function (err, data, fields) {
-            if (err) {
-                return res.status(500).json({
-                    status: "failure",
-                    length: err?.length,
-                    data: err
-                })
+        FROM user
+        WHERE
+            username = ? and password = ?`;
+    var sqlValues = [req.body.username, req.body.password];
+    mySQL.query(sqlQuery, sqlValues, function (err, data, fields) {
+        if (err) {
+            return res.status(500).json({
+                status: "failure",
+                length: err.length,
+                data: err,
+            });
+        } else {
+            if (data.length == 0) {
+                return res.status(401).json({
+                    status: "failed login",
+                    length: data.length,
+                    data: data,
+                });
             } else {
                 return res.status(200).json({
-                status: "success",
-                length: data?.length,
-                data: data,
+                    status: "success",
+                    length: data.length,
+                    data: data,
                 });
             }
         }
-    );
+    });
 });
 
-
-
-
-userRouter.put('/:InterviewID', async(req, res) => {
-    console.log("PUT Interview");
-
-    var sqlQuery = {
-        text: `
-            UPDATE 
-                "Interview"
-            SET 
-                "ApplicationID" = $1,
-                "InterviewTime" = $2,
-                "InterviewStage" = $3,
-                "InterviewVideo" = $4,
-                "InterviewNotes" = $5,
-                "InterviewScoreBehavioral" = $6,
-                "InterviewScoreTechnical" = $7
-            WHERE 
-                "InterviewID"= $8
-            RETURNING *`,
-        values: [
-            req.body.ApplicationID, 
-            req.body.InterviewTime, 
-            req.body.InterviewStage, 
-            req.body.InterviewVideo,
-            req.body.InterviewNotes, 
-            req.body.InterviewScoreBehavioral,
-            req.body.InterviewScoreTechnical,
-            req.params.InterviewID
-        ]
-    };
-    var output = await mySQL
-        .query(sqlQuery)
-        .catch(e => {
-            console.error(e.stack);
-            return res.status(400).json(
-                {
-                    message: `Error Occured while running Query`,
-                    status: "Failed"
-                }
-            );
-        });
-
-    if (output.rowCount == 0) {
-        return res.status(400).json(
-            {
-                message: `No row with ID=${req.params.InterviewID}`,
-                status: "Failed"
-            }
-        );
-    } else {
-        return res.send(output.rows);
-    }
-})
-
-
-
-
-userRouter.delete('/:InterviewID', async(req, res) => {
-    console.log("DELETE Interview by ID");
-
-    var sqlQuery = {
-        text: `
-            DELETE FROM 
-                "Interview" 
-            WHERE 
-                "InterviewID"= $1
-            RETURNING *`,
-        values: [
-            req.params.InterviewID
-        ]
-    };
-    var output = await mySQL
-        .query(sqlQuery)
-        .catch(e => {
-            console.error(e.stack);
-            return res.status(400).json(
-                {
-                    message: `Error Occured while running Query`,
-                    status: "Failed"
-                }
-            );
-        });
-
-    if (output.rowCount == 0) {
-        return res.status(400).json(
-            {
-                message: `No row with ID=${req.params.InterviewID}`,
-                status: "Failed"
-            }
-        );
-    } else {
-        return res.send(output.rows);
-    }
+userRouter.put("/:username", async (req, res) => {
+    console.log("PUT user");
+    var sqlQuery = `
+        UPDATE 
+            user
+        SET 
+            password = ?,
+            first_name = ?,
+            last_name = ?,
+            gender = ?,
+            age = ?,
+            weight = ?,
+            height = ?
+        WHERE
+            username = ?`;
+    var sqlValues = [
+        req.body.password,
+        req.body.first_name,
+        req.body.last_name,
+        req.body.gender,
+        req.body.age,
+        req.body.weight,
+        req.body.height,
+        req.params.username,
+    ];
+    mySQL.query(sqlQuery, sqlValues, function (err, data, fields) {
+        if (err) {
+            return res.status(500).json({
+                status: "failure",
+                length: err.length,
+                data: err,
+            });
+        } else {
+            return res.status(200).json({
+                status: "success",
+                length: data.length,
+                data: data,
+            });
+        }
+    });
 });
 
+userRouter.delete("/:username", async (req, res) => {
+    console.log("DELETE user");
+    var sqlQuery = `
+        DELETE 
+            FROM user
+        WHERE
+            username = ?`;
+    var sqlValues = [req.params.username];
+    mySQL.query(sqlQuery, sqlValues, function (err, data, fields) {
+        if (err) {
+            return res.status(500).json({
+                status: "failure",
+                length: err.length,
+                data: err,
+            });
+        } else {
+            return res.status(200).json({
+                status: "success",
+                length: data.length,
+                data: data,
+            });
+        }
+    });
+});
 
+userRouter.get("/mostActive", async (req, res) => {
+    console.log("GET mostActive user");
+    var sqlQuery = `
+    SELECT user.first_name, user.last_name, COUNT(workout.id) as number_of_workouts
+    FROM user LEFT JOIN workout ON (user.username = workout.user_username)
+    GROUP BY user.username
+    ORDER BY COUNT(workout.id) DESC
+    LIMIT 15;`;
+    mySQL.query(sqlQuery, function (err, data, fields) {
+        console.log("data" + data);
+        if (err) {
+            return res.status(500).json({
+                status: "failure",
+                length: err.length,
+                data: err,
+            });
+        } else {
+            return res.status(200).json({
+                status: "success",
+                length: data.length,
+                data: data,
+            });
+        }
+    });
+});
 
-
-
-
-
-
+userRouter.get("/:username", async (req, res) => {
+    console.log("GET user by userName");
+    var sqlQuery = `
+        SELECT *
+            FROM user
+        WHERE 
+            username = ?`;
+    var sqlValues = [req.params.username];
+    mySQL.query(sqlQuery, sqlValues, function (err, data, fields) {
+        if (err) {
+            return res.status(500).json({
+                status: "failure",
+                length: err.length,
+                data: err,
+            });
+        } else {
+            return res.status(200).json({
+                status: "success",
+                length: data.length,
+                data: data,
+            });
+        }
+    });
+});
 
 module.exports = userRouter;
